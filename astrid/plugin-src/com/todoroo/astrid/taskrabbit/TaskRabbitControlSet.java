@@ -1,5 +1,6 @@
 package com.todoroo.astrid.taskrabbit;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,7 +27,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -35,6 +39,7 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -46,6 +51,9 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.RestClient;
 import com.todoroo.andlib.utility.Preferences;
+import com.todoroo.astrid.actfm.ActFmCameraModule;
+import com.todoroo.astrid.actfm.ActFmCameraModule.CameraResultCallback;
+import com.todoroo.astrid.actfm.ActFmCameraModule.ClearImageCallback;
 import com.todoroo.astrid.actfm.EditPeopleControlSet.AssignedChangedListener;
 import com.todoroo.astrid.actfm.OAuthLoginActivity;
 import com.todoroo.astrid.data.Task;
@@ -85,6 +93,10 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private Button  taskButton;
     private LinearLayout taskControls;
     private Location currentLocation;
+    private ImageButton pictureButton;
+    private Bitmap pendingCommentPicture = null;
+    private int cameraButton;
+
     private final Fragment fragment;
     private final List<TaskRabbitSetListener> controls = Collections.synchronizedList(new ArrayList<TaskRabbitSetListener>());
 
@@ -190,6 +202,10 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             taskDescription.setText(model.getValue(Task.TITLE) + model.getValue(Task.NOTES));
         }
         populateFields(taskRabbitTask);
+
+        if (taskRabbitTask != null && TextUtils.isEmpty(taskRabbitTask.getTaskID())) {
+            taskButton.setText("Update task!");
+        }
     }
     private void displayViewsForMode(int mode) {
 
@@ -221,11 +237,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
         JSONObject parameters = new JSONObject();
         for(int i = 0; i < keys.length; i++) {
-        try {
-            parameters.put(keys[i], (presetValues[i]));
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            try {
+                parameters.put(keys[i], (presetValues[i]));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
         return parameters;
     }
@@ -273,8 +289,36 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             });
 
 
+
+            cameraButton = getDefaultCameraButton();
+            final ClearImageCallback clearImage = new ClearImageCallback() {
+                @Override
+                public void clearImage() {
+                    pendingCommentPicture = null;
+                    pictureButton.setImageResource(cameraButton);
+                }
+            };
+            pictureButton = (ImageButton) getView().findViewById(R.id.picture);
+            pictureButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (pendingCommentPicture != null)
+                        ActFmCameraModule.showPictureLauncher(fragment, clearImage);
+                    else
+                        ActFmCameraModule.showPictureLauncher(fragment, null);
+                }
+            });
+
+
             setUpControls();
         }
+    }
+
+
+    private int getDefaultCameraButton() {
+        TypedValue tv = new TypedValue();
+        fragment.getActivity().getTheme().resolveAttribute(R.attr.asCameraButtonImg, tv, false);
+        return tv.data;
     }
 
     private void populateFields(TaskRabbitTaskContainer container) {
@@ -314,6 +358,15 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
 
         Log.d("localParamsToJSON", parameters.toString());
+
+        if (pendingCommentPicture != null) {
+            String picture = buildPictureData(pendingCommentPicture);
+            JSONObject pictureArray = new JSONObject();
+            pictureArray.put("image", picture);
+
+            parameters.put("uploaded_photos_attributes", new JSONObject().put("1", pictureArray));
+            Log.d("The task json", parameters.toString());
+        }
         return new JSONObject().put("task", parameters);
     }
 
@@ -349,7 +402,17 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         return null;
     }
 
-
+    public static String buildPictureData(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        if(bitmap.getWidth() > 512 || bitmap.getHeight() > 512) {
+            float scale = Math.min(512f / bitmap.getWidth(), 512f / bitmap.getHeight());
+            bitmap = Bitmap.createScaledBitmap(bitmap, (int)(scale * bitmap.getWidth()),
+                    (int)(scale * bitmap.getHeight()), false);
+        }
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
+        byte[] bytes = baos.toByteArray();
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
+    }
     private final Handler handler = new Handler() {
 
         @Override
@@ -367,6 +430,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 break;
             case 0: break;
             case 1:
+                pendingCommentPicture = null;
                 showSuccessToast();
                 TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
                 updateDisplay(taskRabbitTask.getRemoteTaskData());
@@ -394,11 +458,13 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 public void run() {
 
                     try {
-                        String urlCall = "tasks/";
+                        String taskID = taskRabbitTask.getTaskID();
+                        String urlCall = "tasks/" + taskID;
                         Log.d("Tasks url:", taskRabbitURL(urlCall));
                         Header authorization = new BasicHeader("Authorization", "OAuth " + Preferences.getStringValue(TASK_RABBIT_TOKEN));  //$NON-NLS-1$
                         Header contentType = new BasicHeader("Content-Type",  //$NON-NLS-1$
                         "application/json");   //$NON-NLS-1$
+
                         String response = restClient.post(taskRabbitURL(urlCall), getTaskBody(), contentType, authorization);
                         Log.d("Task rabbit response", response);
                         JSONObject taskResponse = new JSONObject(response);
@@ -409,7 +475,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                             successMessage.what = 1;
                             handler.sendMessage(successMessage);
                         }
-
                     }
                     catch (Exception e){
                         e.printStackTrace();
@@ -520,6 +585,18 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                     }
                 }
             }
+        }
+        if (dialog.isShowing()) {
+            CameraResultCallback callback = new CameraResultCallback() {
+                @Override
+                public void handleCameraResult(Bitmap bitmap) {
+                    pendingCommentPicture = bitmap;
+                    pictureButton.setImageBitmap(pendingCommentPicture);
+                }
+            };
+
+            return (ActFmCameraModule.activityResult(activity,
+                    requestCode, resultCode, data, callback));
         }
         return false;
     }

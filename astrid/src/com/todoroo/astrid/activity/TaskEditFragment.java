@@ -1102,10 +1102,10 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (editNotes != null && editNotes.activityResult(requestCode, resultCode, data)) {
+        if (taskRabbitControl != null && taskRabbitControl.activityResult(requestCode, resultCode, data)) {
             return;
         }
-        else if (taskRabbitControl != null && taskRabbitControl.activityResult(requestCode, resultCode, data)) {
+        else if (editNotes != null && editNotes.activityResult(requestCode, resultCode, data)) {
             return;
         }
         else if (requestCode == REQUEST_VOICE_RECOG
