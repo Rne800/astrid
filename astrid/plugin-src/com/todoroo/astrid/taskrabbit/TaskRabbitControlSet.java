@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -32,14 +33,18 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.PopupWindow.OnDismissListener;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,6 +64,7 @@ import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.helper.TaskEditControlSet;
 import com.todoroo.astrid.service.StatisticsConstants;
 import com.todoroo.astrid.service.StatisticsService;
+import com.todoroo.astrid.ui.FragmentPopover;
 import com.todoroo.astrid.ui.PopupControlSet;
 
 public class TaskRabbitControlSet extends PopupControlSet implements AssignedChangedListener, LocationListener {
@@ -89,12 +95,17 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     /** true if editing started with a new task */
     boolean isNewTask = false;
     private EditText taskDescription;
+    private EditText taskTitle;
     private Button  taskButton;
     private LinearLayout taskControls;
     private Location currentLocation;
     private ImageButton pictureButton;
     private Bitmap pendingCommentPicture = null;
     private int cameraButton;
+    private FragmentPopover menuPopover;
+    private ImageView menuButton;
+    private TextView menuTitle;
+    private ListView menuList;
 
     private final Fragment fragment;
     private final List<TaskRabbitSetListener> controls = Collections.synchronizedList(new ArrayList<TaskRabbitSetListener>());
@@ -122,6 +133,54 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         loadLocation();
 
     }
+
+    private final OnClickListener menuClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            menuButton.setSelected(true);
+            menuPopover.show(v);
+        }
+    };
+
+
+    private void createMenuPopover() {
+        menuPopover = new FragmentPopover(activity, R.layout.task_rabbit_menu_popover);
+        menuPopover.setOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+//                setListsDropdownSelected(false);
+            }
+        });
+        setupListView();
+        menuPopover.setContent(menuList);
+    }
+
+
+    private void setupListView() {
+        String[] keys = activity.getResources().getStringArray(R.array.tr_preset_types);
+        ListAdapter adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
+        menuList = new ListView(activity);
+        menuList.setAdapter(adapter);
+        menuList.setBackgroundColor(Color.GRAY);
+        menuList.setSelection(0);
+        menuList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                    long id) {
+                displayViewsForMode(position);
+                menuPopover.dismiss();
+            }
+        });
+    }
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -167,14 +226,18 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
     }
 
+    private int getSelectedItemPosition() {
+         return (menuList.getSelectedItemPosition() >= 0) ? menuList.getSelectedItemPosition() : 0;
+    }
+
 
     private void setUpControls() {
         TypedArray arrays = activity.getResources().obtainTypedArray(R.array.tr_default_set);
         TypedArray arrayType = activity.getResources().obtainTypedArray(R.array.tr_default_array);
         for (int i = 0; i < arrays.length(); i++) {
 
-            int titleID = arrays.getResourceId(i, -1);
-            int arrayID = arrayType.getResourceId(i, -1);
+            int titleID = arrays.getResourceId(i, 0);
+            int arrayID = arrayType.getResourceId(i, 0);
             if (arrayID == R.string.tr_location) {
                 TaskRabbitLocationControlSet set = new TaskRabbitLocationControlSet(fragment, R.layout.task_rabbit_row, titleID, i);
                 controls.add(set);
@@ -196,25 +259,31 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 controls.add(set);
             }
         }
-        if(taskDescription.getText().length() == 0){
-            taskDescription.setText(model.getValue(Task.TITLE) + model.getValue(Task.NOTES));
+        if(TextUtils.isEmpty(taskDescription.getText())){
+            taskDescription.setText(model.getValue(Task.NOTES));
+        }
+        if(TextUtils.isEmpty(taskTitle.getText())) {
+            taskTitle.setText(model.getValue(Task.TITLE));
         }
         populateFields(taskRabbitTask);
 
         if (taskRabbitTask != null && TextUtils.isEmpty(taskRabbitTask.getTaskID())) {
             taskButton.setText("Update task!");
         }
+        displayViewsForMode(getSelectedItemPosition());
     }
     private void displayViewsForMode(int mode) {
 
+        /*
         for (int i = 0; i < taskControls.getChildCount(); i++){
             ViewGroup row = (ViewGroup)taskControls.getChildAt(i);
             row.removeAllViews();
-        }
+        }*/
         taskControls.removeAllViews();
 
         LinearLayout row = null;
 
+        menuTitle.setText(activity.getResources().getStringArray(R.array.tr_preset_types)[mode]);
         int[] presetValues = getPresetValues(mode);
         String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
         JSONObject parameters = defaultValuesToJSON(keys, presetValues);
@@ -248,6 +317,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private void setUpUIComponents() {
         if (taskDescription == null){
             taskDescription = (EditText) getView().findViewById(R.id.task_description);
+            taskTitle = (EditText) getView().findViewById(R.id.task_title);
 
             taskControls = (LinearLayout)getView().findViewById(R.id.task_controls);
 
@@ -278,7 +348,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 @Override
                 public void onItemSelected(AdapterView<?> arg0, View arg1,
                         int arg2, long arg3) {
-                    displayViewsForMode(spinnerMode.getSelectedItemPosition());
+                    displayViewsForMode(getSelectedItemPosition());
                 }
                 @Override
                 public void onNothingSelected(AdapterView<?> arg0) {
@@ -286,6 +356,12 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 }
             });
 
+
+
+            menuButton = (ImageView)getView().findViewById(R.id.task_rabbit_menu);
+            menuTitle = (TextView) getView().findViewById(R.id.task_rabbit_title);
+            menuTitle.setOnClickListener(menuClickListener);
+            createMenuPopover();
 
 
             cameraButton = getDefaultCameraButton();
@@ -327,7 +403,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         synchronized (controls) {
             if(jsonData != null) {
                 String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
-                spinnerMode.setSelection(jsonData.optInt(keys[0]));
+                menuList.setSelection(jsonData.optInt(keys[0]));
+                String title = jsonData.optString(keys[1]);
+                if (!TextUtils.isEmpty(title)) {
+                    taskTitle.setText(title);
+                }
                 for (int i = 0; i < controls.size(); i++) {
                     TaskRabbitSetListener set = (TaskRabbitSetListener) controls.get(i);
                     set.readFromModel(jsonData, keys[i]);
@@ -340,10 +420,12 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
         JSONObject parameters = new JSONObject();
 
-        int[] presetValues = getPresetValues(spinnerMode.getSelectedItemPosition());
+        int[] presetValues = getPresetValues(getSelectedItemPosition());
         String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
 
-        parameters.put(activity.getString(R.string.tr_set_key_type), spinnerMode.getSelectedItem().toString());
+      parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
+      parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
+
         parameters.put(activity.getString(R.string.tr_set_key_description), taskDescription.getText().toString());
         for (int i = 0; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
@@ -370,8 +452,9 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
 
     private int[] getPresetValues(int mode) {
+        Log.d("fjdskfjdslfjds", "dsfdsf" + mode);
         TypedArray arrays = activity.getResources().obtainTypedArray(R.array.tr_default_type_array);
-        int[] presetValues = activity.getResources().getIntArray(arrays.getResourceId(mode, -1));
+        int[] presetValues = activity.getResources().getIntArray(arrays.getResourceId(mode, 0));
         return presetValues;
     }
 
@@ -384,7 +467,8 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             TaskRabbitSetListener set = controls.get(i);
             set.saveToJSON(parameters, keys[i]);
         }
-        parameters.put(activity.getString(R.string.tr_set_key_type), spinnerMode.getSelectedItemPosition());
+        parameters.put(activity.getString(R.string.tr_set_key_type), getSelectedItemPosition());
+        parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
         parameters.put(activity.getString(R.string.tr_set_key_description), taskDescription.getText().toString());
         return parameters.toString();
     }

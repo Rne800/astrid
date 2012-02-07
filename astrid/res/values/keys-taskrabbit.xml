@@ -37,6 +37,7 @@
         <item>@array/tr_default_type_delivery</item>
         <item>@array/tr_default_type_handyman</item>
         <item>@array/tr_default_type_shopping</item>
+        <item>@array/tr_default_type_something_else</item>
     </array>
     
     <array name="tr_default_type_virtual">
@@ -126,7 +127,7 @@
     
     <array name="tr_default_type_something_else">
         <item>7</item>
-        <item>0</item>
+        <item>-1</item>
         <item>0</item>
         <item>-1</item>
         <item>-1</item>

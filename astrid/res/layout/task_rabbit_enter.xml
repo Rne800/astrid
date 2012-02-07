@@ -1,8 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:astrid="http://schemas.android.com/apk/res/com.timsu.astrid"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="100"
+    android:orientation="vertical"
+>
+    
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="50dip">
+        <TextView
+            android:id="@+id/task_rabbit_title"
+            android:layout_width="fill_parent"
+            android:layout_height="50dip"
+            />
+        <ImageView
+            android:id="@+id/task_rabbit_menu"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            />
+    </LinearLayout>
+    
+<ScrollView 
     android:id="@+id/edit_scroll"
-        style="@style/Content_EditScroll"
+    style="@style/Content_EditScroll"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_weight="100" >
@@ -11,40 +34,41 @@
         android:id="@+id/task_rabbit_parent"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:orientation="vertical"
         android:background="#00000000"
+        android:orientation="vertical"
         android:padding="10dip" >
 
         <Spinner
             android:id="@+id/task_type"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
 
-        
         <LinearLayout
             android:id="@+id/title_controls"
             style="@style/EditRow"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
-    <com.todoroo.astrid.ui.ErrorCatchingEditText
-        android:id="@+id/title"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="100"
-        android:autoText="true"
-        android:background="@drawable/edit_title_background"
-        android:capitalize="sentences"
-        android:freezesText="true"
-        android:hint="@string/TEA_title_hint"
-        android:inputType="textMultiLine"
-        android:paddingLeft="5dip"
-        android:paddingTop="3dip"
-        android:scrollbars="vertical"
-        android:text=""
-        android:textColor="@android:color/black" />
-    </LinearLayout>
-        
+
+            <com.todoroo.astrid.ui.ErrorCatchingEditText
+                android:id="@+id/task_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="100"
+                android:autoText="true"
+                android:background="@drawable/edit_title_background"
+                android:capitalize="sentences"
+                android:freezesText="true"
+                android:hint="@string/TEA_title_hint"
+                android:inputType="textMultiLine"
+                android:paddingLeft="5dip"
+                android:paddingTop="3dip"
+                android:scrollbars="vertical"
+                android:text=""
+                android:textColor="@android:color/black" />
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/task_controls"
             style="@style/EditRow"
@@ -55,10 +79,10 @@
 
         <LinearLayout
             android:id="@+id/description_container"
+            style="@style/EditRow"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dip"
-                style="@style/EditRow"
             android:orientation="vertical" >
 
             <EditText
@@ -67,8 +91,8 @@
                 android:layout_height="200dip"
                 android:layout_gravity="top"
                 android:layout_marginTop="20dip"
-                android:gravity="top"
                 android:background="#00000000"
+                android:gravity="top"
                 android:hint="Description" />
 
             <ImageButton
@@ -85,3 +109,6 @@
     </LinearLayout>
 
 </ScrollView>
+
+
+</LinearLayout>
