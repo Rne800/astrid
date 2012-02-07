@@ -21,16 +21,14 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
 
     private final Spinner spinner;
     private final int setID;
-    private final int type;
     private final int titleID;
     private final TextView displayText;
     private final Fragment fragment;
-    private final ArrayAdapter adapter;
+    private ArrayAdapter adapter;
 
-    public  TaskRabbitSpinnerControlSet(final Fragment fragment, int viewLayout, int title, int setID, int type) {
+    public  TaskRabbitSpinnerControlSet(final Fragment fragment, int viewLayout, int title, int setID) {
         super(fragment.getActivity(), viewLayout);
         this.setID = setID;
-        this.type = type;
         this.fragment = fragment;
         this.titleID = title;
         //        DependencyInjectionService.getInstance().inject(this);
@@ -43,13 +41,8 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
 
 
 
-        String[] listTypes;
-        if (title == R.string.tr_set_named_price){
-            listTypes = getStringDefaultArray(type, R.array.tr_default_price_type_array);
-        }
-        else {
-            listTypes = getStringDefaultArray(setID, R.array.tr_default_array);
-        }
+        String[] listTypes = getStringDefaultArray(setID, R.array.tr_default_array);
+
 
 
         adapter = new ArrayAdapter<String>(
@@ -68,6 +61,19 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
             int arrayID = arrays.getResourceId(position, -1);
              return getActivity().getResources().getStringArray(arrayID);
     }
+    public void resetAdapter(String[] items) {
+        if (adapter == null) return;
+        adapter = new ArrayAdapter<String>(
+                getActivity(), android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                spinner.setAdapter(adapter);
+                spinner.setSelection(0); // plus 1 for the no selection item
+            }
+        });
+    }
 
     private Activity getActivity() {
         return fragment.getActivity();
@@ -79,6 +85,11 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
 
     @Override
     public void readFromModel(JSONObject json, String key) {
+
+        if (titleID == R.string.tr_set_named_price && json.has("name")){
+            String[] listTypes = getStringDefaultArray(json.optInt("name", 0), R.array.tr_default_price_type_array);
+            resetAdapter(listTypes);
+        }
         int intValue = json.optInt(key);
         if (intValue < spinner.getCount())
             spinner.setSelection(intValue);

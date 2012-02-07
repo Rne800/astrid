@@ -49,7 +49,7 @@
         <item>10</item>
         <item>-1</item>
         <item>0</item>
-        <item>25</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_food_delivery">
         <item>1</item>
@@ -61,7 +61,7 @@
         <item>10</item>
         <item>0</item>
         <item>1</item>
-        <item>20</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_cleaning">
         <item>2</item>
@@ -73,7 +73,7 @@
         <item>10</item>
         <item>-1</item>
         <item>0</item>
-        <item>25</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_donations">
         <item>3</item>
@@ -85,7 +85,7 @@
         <item>10</item>
         <item>0</item>
         <item>0</item>
-        <item>25</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_delivery">
         <item>4</item>
@@ -97,7 +97,7 @@
         <item>10</item>
         <item>0</item>
         <item>0</item>
-        <item>25</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_handyman">
         <item>5</item>
@@ -109,7 +109,7 @@
         <item>10</item>
         <item>-1</item>
         <item>1</item>
-        <item>50</item>
+        <item>2</item>
     </array>
     <array name="tr_default_type_shopping">
         <item>6</item>
@@ -121,7 +121,7 @@
         <item>10</item>
         <item>0</item>
         <item>2</item>
-        <item>20</item>
+        <item>2</item>
     </array>
     
     <array name="tr_default_type_something_else">
@@ -134,7 +134,7 @@
         <item>10</item>
         <item>0</item>
         <item>2</item>
-        <item>20</item>
+        <item>2</item>
     </array>
     
     
@@ -213,7 +213,7 @@
     
     <array name="tr_default_array">
         <item>@array/tr_empty_string_array</item>
-        <item>@array/tr_empty_string_array</item>
+        <item>@string/tr_name</item>
         <item>@string/tr_location</item>
         <item>@array/tr_default_skill</item>
         <item>@array/tr_default_duration</item>
@@ -279,20 +279,6 @@
     <string name="tr_default_cost_in_cents_101">More than $100</string>
     
     
-    <string-array name="tr_default_named_price">
-        <item>@string/tr_default_named_price_10</item>
-        <item>@string/tr_default_named_price_20</item>
-        <item>@string/tr_default_named_price_30</item>
-        <item>@string/tr_default_named_price_40</item>
-    </string-array>
-    <!-- named_price -->
-    <string name="tr_default_named_price_10">$10</string>
-    <string name="tr_default_named_price_20">$20</string>
-    <string name="tr_default_named_price_30">$30</string>
-    <string name="tr_default_named_price_40">$40</string>
-    <string name="tr_default_named_price_50">$50</string>
-    <string name="tr_default_named_price_60">$60</string>
-    <string name="tr_default_named_price_70">$70</string>
     
     
     <string-array name="tr_default_duration">
@@ -319,16 +305,15 @@
     
     
     
-    
     <array name="tr_default_price_type_array">
         <item>@array/tr_type_default_price_virtual</item>
-        <item>@array/tr_type_default_price_food_delivery</item>
+        <item>@array/tr_default_named_price</item>
         <item>@array/tr_type_default_price_cleaning</item>
-        <item>@array/tr_type_default_price_food_delivery</item>
-        <item>@array/tr_type_default_price_food_delivery</item>
+        <item>@array/tr_default_named_price</item>
+        <item>@array/tr_default_named_price</item>
         <item>@array/tr_type_default_price_handyman</item>
-        <item>@array/tr_type_default_price_food_delivery</item>
-        <item>@array/tr_type_default_price_food_delivery</item>
+        <item>@array/tr_default_named_price</item>
+        <item>@array/tr_default_named_price</item>
     </array>
 
     <string-array name="tr_type_default_price_virtual">
@@ -341,7 +326,7 @@
         <item>$55</item>
     </string-array>
     
-    <string-array name="tr_type_default_price_food_delivery">
+    <string-array name="tr_default_named_price">
         <item>$10</item>
         <item>$15</item>
         <item>$20</item>

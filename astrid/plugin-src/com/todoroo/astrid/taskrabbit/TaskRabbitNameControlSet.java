@@ -4,23 +4,33 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.Context;
+import android.text.TextUtils;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
+import com.timsu.astrid.R;
+import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.taskrabbit.TaskRabbitControlSet.TaskRabbitSetListener;
-import com.todoroo.astrid.ui.EditNotesControlSet;
+import com.todoroo.astrid.ui.PopupControlSet;
 
-public class TaskRabbitNameControlSet extends EditNotesControlSet implements TaskRabbitSetListener{
+public class TaskRabbitNameControlSet extends PopupControlSet implements TaskRabbitSetListener{
+
+    protected final EditText editText;
+    protected final TextView notesPreview;
+    private final LinearLayout notesBody;
 
     public TaskRabbitNameControlSet(Activity activity, int viewLayout,
             int displayViewLayout, int titleID, int i) {
-        super(activity, viewLayout, displayViewLayout);
-        displayText.setText("Restaurant name");
-    }
-
-    @Override
-    public void readFromModel(JSONObject json, String key) {
-
-        editText.setTextKeepState(json.optString(key, ""));
-        notesPreview.setText(json.optString(key, ""));
+        super(activity, viewLayout, displayViewLayout, titleID);
+        editText = (EditText) getView().findViewById(R.id.notes);
+        notesPreview = (TextView) getDisplayView().findViewById(R.id.display_row_edit);
+        notesBody = (LinearLayout) getDisplayView().findViewById(R.id.notes_body);
+        dialog.getWindow()
+              .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     }
 
     @Override
@@ -33,6 +43,45 @@ public class TaskRabbitNameControlSet extends EditNotesControlSet implements Tas
         json.put(key, editText.getText().toString());
 
     }
+    @Override
+    public void readFromModel(JSONObject json, String key) {
+        editText.setTextKeepState(json.optString(key, ""));
+        notesPreview.setText(json.optString(key, ""));
+    }
 
+
+
+
+    @Override
+    protected void refreshDisplayView() {
+        notesPreview.setText(editText.getText());
+    }
+
+    @Override
+    public void readFromTask(Task task) {
+    }
+
+    @Override
+    public String writeToModel(Task task) {
+        return null;
+    }
+
+    @Override
+    protected void onOkClick() {
+        super.onOkClick();
+        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+    @Override
+    protected void onCancelClick() {
+        super.onCancelClick();
+        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+    }
+
+    public boolean hasNotes() {
+        return !TextUtils.isEmpty(editText.getText());
+    }
 
 }

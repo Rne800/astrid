@@ -27,7 +27,6 @@ import com.todoroo.astrid.taskrabbit.TaskRabbitControlSet.TaskRabbitSetListener;
 public class TaskRabbitLocationControlSet extends TaskEditControlSet implements TaskRabbitSetListener {
 
     private final int setID;
-    private final int type;
     private final TextView displayText;
     private final TextView displayEdit;
     private final Fragment fragment;
@@ -36,10 +35,9 @@ public class TaskRabbitLocationControlSet extends TaskEditControlSet implements 
 
     public int REQUEST_CODE_TASK_RABBIT_LOCATION = 6;
 
-    public  TaskRabbitLocationControlSet(final Fragment fragment , int viewLayout, int title, int setID, int type) {
+    public  TaskRabbitLocationControlSet(final Fragment fragment , int viewLayout, int title, int setID) {
         super(fragment.getActivity(), viewLayout);
         this.setID = setID;
-        this.type = type;
         this.fragment = fragment;
         //        DependencyInjectionService.getInstance().inject(this);
         REQUEST_CODE_TASK_RABBIT_LOCATION += setID;

@@ -517,7 +517,7 @@ ViewPager.OnPageChangeListener, EditNoteActivity.UpdatesChangedListener {
                 R.string.actfm_EPA_assign_label, REQUEST_LOG_IN));
         controlSetMap.put(getString(R.string.TEA_ctrl_who_pref),
                 peopleControlSet);
-            peopleControlSet.addListener(taskRabbitControl);
+        peopleControlSet.addListener(taskRabbitControl);
 
 
         RepeatControlSet repeatControls = new RepeatControlSet(getActivity(),

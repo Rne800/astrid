@@ -25,7 +25,7 @@
             android:text="@string/TEA_note_label" />
 
         <com.todoroo.astrid.ui.TextViewWithMeasureListener
-            android:id="@+id/notes_display"
+            android:id="@+id/display_row_edit"
             style="@style/TextAppearance.EditRowDisplay"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

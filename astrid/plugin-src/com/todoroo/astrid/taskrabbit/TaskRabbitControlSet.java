@@ -166,7 +166,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             int titleID = arrays.getResourceId(i, -1);
             int arrayID = arrayType.getResourceId(i, -1);
             if (arrayID == R.string.tr_location) {
-                TaskRabbitLocationControlSet set = new TaskRabbitLocationControlSet(fragment, R.layout.task_rabbit_row, titleID, i, spinnerMode.getSelectedItemPosition());
+                TaskRabbitLocationControlSet set = new TaskRabbitLocationControlSet(fragment, R.layout.task_rabbit_row, titleID, i);
                 controls.add(set);
             }
             else if(arrayID == R.string.tr_deadline) {
@@ -178,11 +178,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             }
             else if(arrayID == R.string.tr_name) {
                 TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(activity,
-                        R.layout.control_set_notes, R.layout.control_set_notes_display, titleID, i);
+                        R.layout.control_set_notes, R.layout.task_rabbit_row, titleID, i);
                 controls.add(nameControlSet);
             }
             else {
-                TaskRabbitSpinnerControlSet set = new TaskRabbitSpinnerControlSet(fragment, R.layout.task_rabbit_spinner, titleID, i, spinnerMode.getSelectedItemPosition());
+                TaskRabbitSpinnerControlSet set = new TaskRabbitSpinnerControlSet(fragment, R.layout.task_rabbit_spinner, titleID, i);
                 controls.add(set);
             }
         }
@@ -203,6 +203,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
         int[] presetValues = getPresetValues(mode);
         String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
+        JSONObject parameters = defaultValuesToJSON(keys, presetValues);
         for (int i = 1; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
             if (row == null || row.getChildCount() == 2) {
@@ -213,14 +214,20 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             }
             TaskRabbitSetListener set = controls.get(i);
             row.addView(((TaskEditControlSet)set).getDisplayView(),  new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
-            JSONObject parameters = new JSONObject();
-            try {
-                parameters.put(keys[i], (presetValues[i]));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
             ((TaskRabbitSetListener) set).readFromModel(parameters, keys[i]);
         }
+    }
+    private JSONObject defaultValuesToJSON (String[] keys, int[] presetValues) {
+
+        JSONObject parameters = new JSONObject();
+        for(int i = 0; i < keys.length; i++) {
+        try {
+            parameters.put(keys[i], (presetValues[i]));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        }
+        return parameters;
     }
 
     /** Initialize UI components */
@@ -279,7 +286,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             if(jsonData != null) {
                 String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
                 spinnerMode.setSelection(jsonData.optInt(keys[0]));
-                for (int i = 1; i < controls.size(); i++) {
+                for (int i = 0; i < controls.size(); i++) {
                     TaskRabbitSetListener set = (TaskRabbitSetListener) controls.get(i);
                     set.readFromModel(jsonData, keys[i]);
                 }
@@ -296,7 +303,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
         parameters.put(activity.getString(R.string.tr_set_key_type), spinnerMode.getSelectedItem().toString());
         parameters.put(activity.getString(R.string.tr_set_key_description), taskDescription.getText().toString());
-        for (int i = 1; i < controls.size(); i++) {
+        for (int i = 0; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
             TaskRabbitSetListener set = controls.get(i);
             set.writeToJSON(parameters, keys[i]);
@@ -322,7 +329,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
         JSONObject parameters = new JSONObject();
         String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
-        for (int i = 1; i < controls.size(); i++) {
+        for (int i = 0; i < controls.size(); i++) {
             TaskRabbitSetListener set = controls.get(i);
             set.saveToJSON(parameters, keys[i]);
         }
@@ -604,8 +611,9 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
     @Override
     public boolean shouldShowTaskRabbit() {
-        //if (isLoggedIn()) return true;
-        if(!Locale.getDefault().getCountry().equals("US") ) return false; //$NON-NLS-1$
+        if(true) return true;
+        if (isLoggedIn()) return true;
+        if(!Locale.getDefault().getCountry().equals("US") || currentLocation == null) return false; //$NON-NLS-1$
         for (GeoPoint point : supportedLocations){
             Location city = new Location(""); //$NON-NLS-1$
             city.setLatitude(point.getLatitudeE6()/1E6);
