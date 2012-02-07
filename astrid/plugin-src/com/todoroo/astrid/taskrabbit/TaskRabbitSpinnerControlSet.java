@@ -118,8 +118,8 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
     @Override
     public void readFromModel(JSONObject json, String key) {
 
-        if (titleID == R.string.tr_set_named_price && json.has("name")){
-            String[] listTypes = getStringDefaultArray(json.optInt("name", 0), R.array.tr_default_price_type_array);
+        if (titleID == R.string.tr_set_named_price && json.has(fragment.getActivity().getString(R.string.tr_set_key_type))){
+            String[] listTypes = getStringDefaultArray(json.optInt(fragment.getActivity().getString(R.string.tr_set_key_type), 0), R.array.tr_default_price_type_array);
             resetAdapter(listTypes);
         }
         int intValue = json.optInt(key);

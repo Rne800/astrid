@@ -199,8 +199,8 @@
     </string-array>
     
     <!-- Control set key for json (do not translate) -->
-    <string name="tr_set_key_type">name</string>
-    <string name="tr_set_key_name">name:specific</string>
+    <string name="tr_set_key_type">type</string>
+    <string name="tr_set_key_name">name</string>
     <string name="tr_set_key_location">location</string>
     <string name="tr_set_key_skill_required">description:skill_required</string>
     <string name="tr_set_key_duration">description:duration</string>

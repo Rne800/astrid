@@ -106,6 +106,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private ImageView menuButton;
     private TextView menuTitle;
     private ListView menuList;
+    private ListAdapter adapter;
 
     private final Fragment fragment;
     private final List<TaskRabbitSetListener> controls = Collections.synchronizedList(new ArrayList<TaskRabbitSetListener>());
@@ -158,7 +159,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
     private void setupListView() {
         String[] keys = activity.getResources().getStringArray(R.array.tr_preset_types);
-        ListAdapter adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
+        adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
         menuList = new ListView(activity);
         menuList.setAdapter(adapter);
         menuList.setBackgroundColor(Color.GRAY);
@@ -248,6 +249,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                         activity, R.layout.control_set_deadline,
                         R.layout.task_rabbit_row);
                 controls.add(deadlineControl);
+                deadlineControl.readFromTask(model);
             }
             else if(arrayID == R.string.tr_name) {
                 TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(activity,
@@ -423,10 +425,9 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         int[] presetValues = getPresetValues(getSelectedItemPosition());
         String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
 
-      parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
-      parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
 
-        parameters.put(activity.getString(R.string.tr_set_key_description), taskDescription.getText().toString());
+        String category = "Category: " + taskTitle.getText().toString() + "\n";
+        parameters.put(activity.getString(R.string.tr_set_key_description), category + taskDescription.getText().toString());
         for (int i = 0; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
             TaskRabbitSetListener set = controls.get(i);
@@ -436,6 +437,9 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             parameters.put(activity.getString(R.string.tr_attr_city_id),  Preferences.getInt("task_rabbit_city_id", 1));
             parameters.put(activity.getString(R.string.tr_attr_city_lat), true);
         }
+
+        parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
+//        parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
 
         Log.d("localParamsToJSON", parameters.toString());
 
