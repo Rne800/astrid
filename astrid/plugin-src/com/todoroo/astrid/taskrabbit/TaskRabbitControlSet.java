@@ -33,7 +33,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
@@ -174,7 +173,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         TypedArray arrayType = activity.getResources().obtainTypedArray(R.array.tr_default_array);
         for (int i = 0; i < arrays.length(); i++) {
 
-
             int titleID = arrays.getResourceId(i, -1);
             int arrayID = arrayType.getResourceId(i, -1);
             if (arrayID == R.string.tr_location) {
@@ -222,14 +220,14 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         JSONObject parameters = defaultValuesToJSON(keys, presetValues);
         for (int i = 1; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
-            if (row == null || row.getChildCount() == 2) {
+            /*if (row == null || row.getChildCount() == 2) {
                 row = new LinearLayout(activity);
                 row.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 100));
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 taskControls.addView(row);
-            }
+            }*/
             TaskRabbitSetListener set = controls.get(i);
-            row.addView(((TaskEditControlSet)set).getDisplayView(),  new LinearLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT, 1));
+            taskControls.addView(((TaskEditControlSet)set).getDisplayView());
             ((TaskRabbitSetListener) set).readFromModel(parameters, keys[i]);
         }
     }

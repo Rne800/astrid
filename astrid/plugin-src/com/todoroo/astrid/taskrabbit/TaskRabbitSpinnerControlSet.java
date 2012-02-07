@@ -8,6 +8,10 @@ import android.content.res.TypedArray;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -23,6 +27,7 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
     private final int setID;
     private final int titleID;
     private final TextView displayText;
+    private final TextView displayEdit;
     private final Fragment fragment;
     private ArrayAdapter adapter;
 
@@ -33,8 +38,10 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
         this.titleID = title;
         //        DependencyInjectionService.getInstance().inject(this);
 
-        spinner = (Spinner)getView().findViewById(R.id.display_row_edit);
+        spinner = new Spinner(fragment.getActivity());
         spinner.setPrompt(getActivity().getString(title));
+
+        displayEdit = (TextView) getDisplayView().findViewById(R.id.display_row_edit);
 
         displayText = (TextView) getDisplayView().findViewById(R.id.display_row_title);
         displayText.setText(title);
@@ -52,9 +59,34 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
             @Override
             public void run() {
                 spinner.setAdapter(adapter);
-                spinner.setSelection(0); // plus 1 for the no selection item
             }
         });
+
+        spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                    int arg2, long arg3) {
+                displayEdit.setText(spinner.getSelectedItem().toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
+        getView().setOnClickListener(getDisplayClickListener());
+
+    }
+
+
+    protected OnClickListener getDisplayClickListener() {
+        return new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                spinner.performClick();
+            }
+        };
     }
     public String[] getStringDefaultArray(int position, int arrayType) {
             TypedArray arrays = getActivity().getResources().obtainTypedArray(arrayType);
@@ -93,6 +125,8 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
         int intValue = json.optInt(key);
         if (intValue < spinner.getCount())
             spinner.setSelection(intValue);
+
+        displayEdit.setText(spinner.getSelectedItem().toString());
     }
 
     @Override

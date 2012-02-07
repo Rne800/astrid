@@ -1,51 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:astrid="http://schemas.android.com/apk/res/com.timsu.astrid"
-        android:id="@+id/edit_scroll"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:astrid="http://schemas.android.com/apk/res/com.timsu.astrid"
+    android:id="@+id/edit_scroll"
         style="@style/Content_EditScroll"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="100" >
+
+    <LinearLayout
+        android:id="@+id/task_rabbit_parent"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="100" >
+        android:orientation="vertical"
+        android:background="#00000000"
+        android:padding="10dip" >
+
+        <Spinner
+            android:id="@+id/task_type"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        
+        <LinearLayout
+            android:id="@+id/title_controls"
+            style="@style/EditRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+    <com.todoroo.astrid.ui.ErrorCatchingEditText
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="100"
+        android:autoText="true"
+        android:background="@drawable/edit_title_background"
+        android:capitalize="sentences"
+        android:freezesText="true"
+        android:hint="@string/TEA_title_hint"
+        android:inputType="textMultiLine"
+        android:paddingLeft="5dip"
+        android:paddingTop="3dip"
+        android:scrollbars="vertical"
+        android:text=""
+        android:textColor="@android:color/black" />
+    </LinearLayout>
+        
+        <LinearLayout
+            android:id="@+id/task_controls"
+            style="@style/EditRow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+            android:orientation="vertical" />
 
         <LinearLayout
-            android:id="@+id/task_rabbit_parent"
-            style="@style/Content"
+            android:id="@+id/description_container"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dip"
+                style="@style/EditRow"
             android:orientation="vertical" >
-
-            <TextView
-                style="@style/TextAppearance.GEN_EditLabel.DLG_EditLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/TEA_reminder_alarm_label" />
-
-            <Spinner
-                android:id="@+id/task_type"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/task_controls"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" />
 
             <EditText
                 android:id="@+id/task_description"
                 android:layout_width="match_parent"
-                android:layout_height="300dip"
+                android:layout_height="200dip"
+                android:layout_gravity="top"
+                android:layout_marginTop="20dip"
+                android:gravity="top"
+                android:background="#00000000"
                 android:hint="Description" />
 
             <ImageButton
                 android:id="@+id/picture"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/task_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Send Task!" />
         </LinearLayout>
 
-    </ScrollView>
+        <Button
+            android:id="@+id/task_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send Task!" />
+    </LinearLayout>
+
+</ScrollView>
