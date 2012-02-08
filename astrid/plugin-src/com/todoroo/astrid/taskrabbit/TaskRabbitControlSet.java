@@ -1,6 +1,5 @@
 package com.todoroo.astrid.taskrabbit;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +18,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -30,7 +28,6 @@ import android.os.Message;
 import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
@@ -43,7 +40,6 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -60,9 +56,6 @@ import com.todoroo.andlib.service.Autowired;
 import com.todoroo.andlib.service.DependencyInjectionService;
 import com.todoroo.andlib.service.RestClient;
 import com.todoroo.andlib.utility.Preferences;
-import com.todoroo.astrid.actfm.ActFmCameraModule;
-import com.todoroo.astrid.actfm.ActFmCameraModule.CameraResultCallback;
-import com.todoroo.astrid.actfm.ActFmCameraModule.ClearImageCallback;
 import com.todoroo.astrid.actfm.EditPeopleControlSet.AssignedChangedListener;
 import com.todoroo.astrid.actfm.OAuthLoginActivity;
 import com.todoroo.astrid.data.Task;
@@ -79,6 +72,10 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         public void readFromModel(JSONObject json, String key);
         public void saveToJSON(JSONObject json, String key) throws JSONException;
         public void writeToJSON(JSONObject json, String key) throws JSONException;
+    }
+    public interface ActivityResultSetListener {
+
+        public boolean activityResult (int requestCode, int resultCode, Intent data);
     }
 
     /** task model */
@@ -104,9 +101,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private Button  taskButton;
     private LinearLayout taskControls;
     private Location currentLocation;
-    private ImageButton pictureButton;
-    private Bitmap pendingCommentPicture = null;
-    private int cameraButton;
     private FragmentPopover menuPopover;
     private TextView menuTitle;
     private ListView menuList;
@@ -144,11 +138,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         loadLocation();
 
     }
-
-
-
-
-
 
 
 
@@ -223,9 +212,15 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 deadlineControl.readFromTask(model);
             }
             else if(arrayID == R.string.tr_set_key_name) {
-                TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(activity,
+                TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(fragment,
                         R.layout.control_set_notes, R.layout.task_rabbit_row, titleID, i);
                 controls.add(nameControlSet);
+            }
+            else  if(arrayID == R.string.tr_set_key_description) {
+                TaskRabbitNameControlSet descriptionControlSet = new TaskRabbitNameControlSet(fragment,
+                        R.layout.control_set_description, R.layout.task_rabbit_row, titleID, i);
+                descriptionControlSet.getDisplayView().findViewById(R.id.TEA_Separator).setVisibility(View.GONE);
+                controls.add(descriptionControlSet);
             }
             else {
                 TaskRabbitSpinnerControlSet set = new TaskRabbitSpinnerControlSet(fragment, R.layout.task_rabbit_spinner, titleID, i);
@@ -274,7 +269,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
                 }
                 LinearLayout displayRow = (LinearLayout)((TaskEditControlSet)set).getDisplayView();
-                displayRow.findViewById(R.id.TEA_Separator).setVisibility(View.GONE);
                 LinearLayout.LayoutParams layoutParams= null;
                 if(arrayID == R.string.tr_set_key_named_price) {
                     layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 1);
@@ -385,24 +379,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             createMenuPopover();
 
 
-            final ClearImageCallback clearImage = new ClearImageCallback() {
-                @Override
-                public void clearImage() {
-                    pendingCommentPicture = null;
-                    pictureButton.setImageResource(R.drawable.camera_button_gray);
-                }
-            };
-            pictureButton = (ImageButton) getView().findViewById(R.id.picture);
-            pictureButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (pendingCommentPicture != null)
-                        ActFmCameraModule.showPictureLauncher(fragment, clearImage);
-                    else
-                        ActFmCameraModule.showPictureLauncher(fragment, null);
-                }
-            });
-
 
             setUpControls();
         }
@@ -459,16 +435,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
         //        parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
 
-        Log.d("localParamsToJSON", parameters.toString());
-
-        if (pendingCommentPicture != null) {
-            String picture = buildPictureData(pendingCommentPicture);
-            JSONObject pictureArray = new JSONObject();
-            pictureArray.put("image", picture);
-
-            parameters.put("uploaded_photos_attributes", new JSONObject().put("1", pictureArray));
-            Log.d("The task json", parameters.toString());
-        }
         return new JSONObject().put("task", parameters);
     }
 
@@ -506,17 +472,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         return null;
     }
 
-    public static String buildPictureData(Bitmap bitmap) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        if(bitmap.getWidth() > 512 || bitmap.getHeight() > 512) {
-            float scale = Math.min(512f / bitmap.getWidth(), 512f / bitmap.getHeight());
-            bitmap = Bitmap.createScaledBitmap(bitmap, (int)(scale * bitmap.getWidth()),
-                    (int)(scale * bitmap.getHeight()), false);
-        }
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, baos);
-        byte[] bytes = baos.toByteArray();
-        return Base64.encodeToString(bytes, Base64.DEFAULT);
-    }
     protected void submitTaskRabbit(){
 
         if(!Preferences.isSet(TASK_RABBIT_TOKEN)){
@@ -595,7 +550,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 break;
             case 0: break;
             case 1:
-                pendingCommentPicture = null;
                 showSuccessToast();
                 TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
                 updateDisplay(taskRabbitTask.getRemoteTaskData());
@@ -714,24 +668,12 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
         else {
             for (TaskRabbitSetListener set : controls) {
-                if (set.getClass().equals(TaskRabbitLocationControlSet.class)) {
-                    if (((TaskRabbitLocationControlSet) set).activityResult(requestCode, resultCode, data)) {
+                if (set instanceof ActivityResultSetListener) {
+                    if (((ActivityResultSetListener) set).activityResult(requestCode, resultCode, data))
                         return true;
-                    }
+
                 }
             }
-        }
-        if (dialog.isShowing()) {
-            CameraResultCallback callback = new CameraResultCallback() {
-                @Override
-                public void handleCameraResult(Bitmap bitmap) {
-                    pendingCommentPicture = bitmap;
-                    pictureButton.setImageBitmap(pendingCommentPicture);
-                }
-            };
-
-            return (ActFmCameraModule.activityResult(activity,
-                    requestCode, resultCode, data, callback));
         }
         return false;
     }

@@ -22,9 +22,10 @@ import android.widget.TextView;
 import com.timsu.astrid.R;
 import com.todoroo.astrid.data.Task;
 import com.todoroo.astrid.helper.TaskEditControlSet;
+import com.todoroo.astrid.taskrabbit.TaskRabbitControlSet.ActivityResultSetListener;
 import com.todoroo.astrid.taskrabbit.TaskRabbitControlSet.TaskRabbitSetListener;
 
-public class TaskRabbitLocationControlSet extends TaskEditControlSet implements TaskRabbitSetListener {
+public class TaskRabbitLocationControlSet extends TaskEditControlSet implements TaskRabbitSetListener, ActivityResultSetListener {
 
     private final int setID;
     private final TextView displayText;
