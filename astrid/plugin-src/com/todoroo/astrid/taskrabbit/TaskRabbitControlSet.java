@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -340,7 +341,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             menuNavDisclosure = (ImageView) getView().findViewById(R.id.menu_disclosure_arrow);
 
             menuTitle = (TextView) getView().findViewById(R.id.task_rabbit_title);
-            menuTitle.setOnClickListener(menuClickListener);
+            menuNav.setOnClickListener(menuClickListener);
             createMenuPopover();
 
 
@@ -763,15 +764,17 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             return false;
     }
 
-    public boolean supportLocation() {
+    public boolean supportsCurrentLocation() {
 
-
+        //TODO test this
+        if(true) return true;
+        if (currentLocation == null) return false;
         for (GeoPoint point : supportedLocations){
             Location city = new Location(""); //$NON-NLS-1$
             city.setLatitude(point.getLatitudeE6()/1E6);
             city.setLongitude(point.getLongitudeE6()/1E6);
             float distance = currentLocation.distanceTo(city);
-            if (distance < 400000) {
+            if (distance < 400000) { //250 mi radius
                 return true;
             }
         }
@@ -819,11 +822,14 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
     private void setupListView() {
         String[] keys = activity.getResources().getStringArray(R.array.tr_preset_types);
+        if (!supportsCurrentLocation()) {
+            keys = new String[]{ activity.getResources().getString(R.string.tr_type_virtual)};
+        }
         adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
         menuList = new ListView(activity);
         menuList.setAdapter(adapter);
+        menuList.setCacheColorHint(Color.TRANSPARENT);
 
-        menuList.setBackgroundResource(R.drawable.list_popover_bg);
         menuList.setSelection(0);
         menuList.setOnItemClickListener(new OnItemClickListener() {
 
@@ -835,6 +841,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             }
         });
     }
+
 
 
 }

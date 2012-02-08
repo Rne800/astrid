@@ -31,6 +31,7 @@ public class TaskRabbitNameControlSet extends PopupControlSet implements TaskRab
         notesBody = (LinearLayout) getDisplayView().findViewById(R.id.notes_body);
         dialog.getWindow()
               .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        displayText.setText("Restaurant");
     }
 
     @Override
@@ -40,14 +41,21 @@ public class TaskRabbitNameControlSet extends PopupControlSet implements TaskRab
 
     @Override
     public void writeToJSON(JSONObject json, String key) throws JSONException {
-        json.put(key, editText.getText().toString());
+        String nameKey = activity.getString(R.string.tr_set_key_description);
+        if (json.has(nameKey)) {
+            json.put(nameKey, json.optString(nameKey, "") + "\nRestaurant Name: " + editText.getText().toString());
+        }
 
     }
     @Override
     public void readFromModel(JSONObject json, String key) {
-        if (json.optInt(key) == 1) return;
+        if (json.optInt(key) == 1) {
+            editText.setHint("Enter a restaurant");
+            return;
+        }
         editText.setTextKeepState(json.optString(key, ""));
         notesPreview.setText(json.optString(key, ""));
+
     }
 
 

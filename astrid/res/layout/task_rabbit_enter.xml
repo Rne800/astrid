@@ -10,15 +10,14 @@
 
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/abHeight"
             style="@style/Content"
         android:background="?attr/abBackground">
-            >
             
         <RelativeLayout 
             android:id="@+id/menu_nav"
             android:layout_width="wrap_content"
-            android:layout_height="35dip"
+            android:layout_height="fill_parent"
             android:layout_margin="5dip"
             android:paddingRight="5dip"
             android:paddingLeft="5dip"
