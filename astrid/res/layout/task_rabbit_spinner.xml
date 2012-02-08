@@ -12,6 +12,11 @@
         android:orientation="horizontal"
         android:paddingLeft="10dip"
         android:paddingRight="10dip" >
+        
+  <Spinner
+    android:id="@+id/spinner"
+    android:layout_width="0dip"
+    android:layout_height="0dip" />
 
         <TextView
             android:id="@+id/display_row_title"
@@ -29,7 +34,7 @@
             android:layout_weight="1"
             android:gravity="right"
             android:text="Hello"
-            android:paddingLeft="10dip" />
+            android:paddingLeft="5dip" />
     </LinearLayout>
 
     <View

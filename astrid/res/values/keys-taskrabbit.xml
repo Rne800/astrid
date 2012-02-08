@@ -182,7 +182,7 @@
     <string name="tr_set_deadline">Deadline</string>
     <string name="tr_set_drop_off">Dropoff</string>
     <string name="tr_set_cost_in_cents">Expenses</string>
-    <string name="tr_set_named_price">I will Pay</string>
+    <string name="tr_set_named_price">I\'ll Pay</string>
     
         
     <string-array name="tr_default_set_key">

@@ -19,7 +19,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -33,6 +32,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -103,15 +103,19 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private Bitmap pendingCommentPicture = null;
     private int cameraButton;
     private FragmentPopover menuPopover;
-    private ImageView menuButton;
     private TextView menuTitle;
     private ListView menuList;
     private ListAdapter adapter;
+
+
+    private View menuNav;
+    private ImageView menuNavDisclosure;
 
     private final Fragment fragment;
     private final List<TaskRabbitSetListener> controls = Collections.synchronizedList(new ArrayList<TaskRabbitSetListener>());
 
     private Spinner spinnerMode;
+    private LinearLayout row;
 
     public static final int REQUEST_CODE_TASK_RABBIT_OAUTH = 5;
     /** Act.fm current user name */
@@ -135,45 +139,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
     }
 
-    private final OnClickListener menuClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            menuButton.setSelected(true);
-            menuPopover.show(v);
-        }
-    };
-
-
-    private void createMenuPopover() {
-        menuPopover = new FragmentPopover(activity, R.layout.task_rabbit_menu_popover);
-        menuPopover.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss() {
-//                setListsDropdownSelected(false);
-            }
-        });
-        setupListView();
-        menuPopover.setContent(menuList);
-    }
-
-
-    private void setupListView() {
-        String[] keys = activity.getResources().getStringArray(R.array.tr_preset_types);
-        adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
-        menuList = new ListView(activity);
-        menuList.setAdapter(adapter);
-        menuList.setBackgroundColor(Color.GRAY);
-        menuList.setSelection(0);
-        menuList.setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position,
-                    long id) {
-                displayViewsForMode(position);
-                menuPopover.dismiss();
-            }
-        });
-    }
 
 
 
@@ -228,7 +193,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
 
     private int getSelectedItemPosition() {
-         return (menuList.getSelectedItemPosition() >= 0) ? menuList.getSelectedItemPosition() : 0;
+        return (menuList.getSelectedItemPosition() >= 0) ? menuList.getSelectedItemPosition() : 0;
     }
 
 
@@ -276,38 +241,47 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
     private void displayViewsForMode(int mode) {
 
-        /*
-        for (int i = 0; i < taskControls.getChildCount(); i++){
-            ViewGroup row = (ViewGroup)taskControls.getChildAt(i);
-            row.removeAllViews();
-        }*/
+
         taskControls.removeAllViews();
 
-        LinearLayout row = null;
+        if (row == null) {
+        row = new LinearLayout(activity);
+        row.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        }
+        else {
+            row.removeAllViews();
+        }
 
         menuTitle.setText(activity.getResources().getStringArray(R.array.tr_preset_types)[mode]);
         int[] presetValues = getPresetValues(mode);
-        String[] keys = activity.getResources().getStringArray(R.array.tr_default_set_key);
+        TypedArray keys = activity.getResources().obtainTypedArray(R.array.tr_default_set_key);
         JSONObject parameters = defaultValuesToJSON(keys, presetValues);
         for (int i = 1; i < controls.size(); i++) {
             if (presetValues[i] == -1) continue;
-            /*if (row == null || row.getChildCount() == 2) {
-                row = new LinearLayout(activity);
-                row.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, 100));
-                row.setOrientation(LinearLayout.HORIZONTAL);
-                taskControls.addView(row);
-            }*/
             TaskRabbitSetListener set = controls.get(i);
-            taskControls.addView(((TaskEditControlSet)set).getDisplayView());
-            ((TaskRabbitSetListener) set).readFromModel(parameters, keys[i]);
+            int arrayID = keys.getResourceId(i, 0);
+            if (arrayID == R.string.tr_set_key_cost_in_cents || arrayID == R.string.tr_set_key_named_price) {
+                if(row.getParent() == null)
+                   taskControls.addView(row);
+                View displayRow = ((TaskEditControlSet)set).getDisplayView();
+                displayRow.findViewById(R.id.TEA_Separator).setVisibility(View.GONE);
+                row.addView(displayRow, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 1));
+            }
+            else {
+                taskControls.setOrientation(LinearLayout.VERTICAL);
+                taskControls.addView(((TaskEditControlSet)set).getDisplayView());
+            }
+            ((TaskRabbitSetListener) set).readFromModel(parameters, activity.getString(arrayID));
         }
     }
-    private JSONObject defaultValuesToJSON (String[] keys, int[] presetValues) {
+    private JSONObject defaultValuesToJSON (TypedArray keys, int[] presetValues) {
 
         JSONObject parameters = new JSONObject();
-        for(int i = 0; i < keys.length; i++) {
+        for(int i = 0; i < keys.length(); i++) {
             try {
-                parameters.put(keys[i], (presetValues[i]));
+                int arrayID = keys.getResourceId(i, 0);
+                parameters.put(activity.getString(arrayID), (presetValues[i]));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -360,7 +334,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
 
 
-            menuButton = (ImageView)getView().findViewById(R.id.task_rabbit_menu);
+
+
+            menuNav = getView().findViewById(R.id.menu_nav);
+            menuNavDisclosure = (ImageView) getView().findViewById(R.id.menu_disclosure_arrow);
+
             menuTitle = (TextView) getView().findViewById(R.id.task_rabbit_title);
             menuTitle.setOnClickListener(menuClickListener);
             createMenuPopover();
@@ -418,6 +396,8 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
     }
 
+
+    /* saving/converting task rabbit data */
     private JSONObject localParamsToJSON () throws JSONException {
 
         JSONObject parameters = new JSONObject();
@@ -439,7 +419,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
 
         parameters.put(activity.getString(R.string.tr_set_key_name), taskTitle.getText().toString());
-//        parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
+        //        parameters.put(activity.getString(R.string.tr_set_key_type), menuList.getSelectedItem().toString());
 
         Log.d("localParamsToJSON", parameters.toString());
 
@@ -499,38 +479,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         byte[] bytes = baos.toByteArray();
         return Base64.encodeToString(bytes, Base64.DEFAULT);
     }
-    private final Handler handler = new Handler() {
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-            case -1:
-
-                if(dialog.isShowing()) {
-                    AlertDialog.Builder adb = new AlertDialog.Builder(activity);
-                    adb.setTitle("Error posting task");
-                    adb.setMessage("Please try again");
-                    adb.setPositiveButton("Close",null);
-                    adb.show();
-                }
-                break;
-            case 0: break;
-            case 1:
-                pendingCommentPicture = null;
-                showSuccessToast();
-                TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
-                updateDisplay(taskRabbitTask.getRemoteTaskData());
-                dialog.dismiss();
-                break;
-            case 2:
-                TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
-                updateDisplay(taskRabbitTask.getRemoteTaskData());
-                dialog.dismiss();
-                break;
-            }
-        }
-    };
-
     protected void submitTaskRabbit(){
 
         if(!Preferences.isSet(TASK_RABBIT_TOKEN)){
@@ -582,6 +530,8 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         //submit!
     }
 
+
+    /* message callbacks */
     /**
      * Show toast for task edit canceling
      */
@@ -590,7 +540,40 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 Toast.LENGTH_SHORT).show();
     }
 
+    private final Handler handler = new Handler() {
 
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case -1:
+
+                if(dialog.isShowing()) {
+                    AlertDialog.Builder adb = new AlertDialog.Builder(activity);
+                    adb.setTitle("Error posting task");
+                    adb.setMessage("Please try again");
+                    adb.setPositiveButton("Close",null);
+                    adb.show();
+                }
+                break;
+            case 0: break;
+            case 1:
+                pendingCommentPicture = null;
+                showSuccessToast();
+                TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
+                updateDisplay(taskRabbitTask.getRemoteTaskData());
+                dialog.dismiss();
+                break;
+            case 2:
+                TaskRabbitDataService.getInstance().saveTaskAndMetadata(taskRabbitTask);
+                updateDisplay(taskRabbitTask.getRemoteTaskData());
+                dialog.dismiss();
+                break;
+            }
+        }
+    };
+
+
+    /* login methods */
     protected void loginTaskRabbit() {
         Intent intent = new Intent(activity,
                 OAuthLoginActivity.class);
@@ -637,12 +620,14 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
     /** Fire task rabbit if assigned **/
     @Override
-    public void assignedChanged(String name, JSONObject json) {
+    public boolean showTaskRabbitForUser(String name, JSONObject json) {
         // TODO Auto-generated method stub
         if (name.equals(activity.getString(R.string.actfm_EPA_task_rabbit))) {
             setUpUIComponents();
             dialog.show();
+            return true;
         }
+        return false;
     }
 
     public boolean activityResult (int requestCode, int resultCode, Intent data) {
@@ -774,9 +759,13 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
     @Override
     public boolean shouldShowTaskRabbit() {
-        if(true) return true;
-        if (isLoggedIn()) return true;
-        if(!Locale.getDefault().getCountry().equals("US") || currentLocation == null) return false; //$NON-NLS-1$
+        if(Locale.getDefault().getCountry().equals("US")) return true; //$NON-NLS-1$
+            return false;
+    }
+
+    public boolean supportLocation() {
+
+
         for (GeoPoint point : supportedLocations){
             Location city = new Location(""); //$NON-NLS-1$
             city.setLatitude(point.getLatitudeE6()/1E6);
@@ -788,4 +777,64 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
         return false;
     }
+
+
+
+
+    /* Menu Popover */
+    private void setMenuDropdownSelected(boolean selected) {
+        int oldTextColor = menuTitle.getTextColors().getDefaultColor();
+        int textStyle = (selected ? R.style.TextAppearance_ActionBar_ListsHeader_Selected :
+            R.style.TextAppearance_ActionBar_ListsHeader);
+
+        TypedValue listDisclosure = new TypedValue();
+        activity.getTheme().resolveAttribute(R.attr.asListsDisclosure, listDisclosure, false);
+        menuTitle.setTextAppearance(activity, textStyle);
+        menuNav.setBackgroundColor(selected ? oldTextColor : android.R.color.transparent);
+        menuNavDisclosure.setSelected(selected);
+    }
+
+
+    private final OnClickListener menuClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            setMenuDropdownSelected(true);
+            menuPopover.show(v);
+        }
+    };
+
+
+    private void createMenuPopover() {
+        menuPopover = new FragmentPopover(activity, R.layout.task_rabbit_menu_popover);
+        menuPopover.setOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                setMenuDropdownSelected(false);
+            }
+        });
+        setupListView();
+        menuPopover.setContent(menuList);
+    }
+
+
+    private void setupListView() {
+        String[] keys = activity.getResources().getStringArray(R.array.tr_preset_types);
+        adapter = new ArrayAdapter<String>(activity, R.layout.task_rabbit_menu_row, keys);
+        menuList = new ListView(activity);
+        menuList.setAdapter(adapter);
+
+        menuList.setBackgroundResource(R.drawable.list_popover_bg);
+        menuList.setSelection(0);
+        menuList.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                    long id) {
+                displayViewsForMode(position);
+                menuPopover.dismiss();
+            }
+        });
+    }
+
+
 }

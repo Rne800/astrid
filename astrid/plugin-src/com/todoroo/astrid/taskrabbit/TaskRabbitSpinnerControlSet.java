@@ -38,7 +38,8 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
         this.titleID = title;
         //        DependencyInjectionService.getInstance().inject(this);
 
-        spinner = new Spinner(fragment.getActivity());
+//        spinner = new Spinner(fragment.getActivity());
+        spinner = (Spinner) getDisplayView().findViewById(R.id.spinner);
         spinner.setPrompt(getActivity().getString(title));
 
         displayEdit = (TextView) getDisplayView().findViewById(R.id.display_row_edit);
@@ -67,6 +68,8 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
             @Override
             public void onItemSelected(AdapterView<?> arg0, View arg1,
                     int arg2, long arg3) {
+                Log.d("SELECTED ITEM", "SLECTED :" + arg2 + " ACTUAL: " + spinner.getSelectedItemPosition() + " STRING: " + spinner.getSelectedItem().toString());
+
                 displayEdit.setText(spinner.getSelectedItem().toString());
             }
 
@@ -75,6 +78,7 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
 
             }
         });
+        Log.d("SELECTED ITEM", " ACTUAL: " + spinner.getSelectedItemPosition());
         getView().setOnClickListener(getDisplayClickListener());
 
     }
@@ -105,6 +109,22 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
                 spinner.setSelection(0); // plus 1 for the no selection item
             }
         });
+
+        spinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                    int arg2, long arg3) {
+                Log.d("SELECTED ITEM", "SLECTED :" + arg2 + " ACTUAL: " + spinner.getSelectedItemPosition() + " STRING: " + spinner.getSelectedItem().toString());
+
+                displayEdit.setText(spinner.getSelectedItem().toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+
+            }
+        });
     }
 
     private Activity getActivity() {
@@ -122,11 +142,16 @@ public class TaskRabbitSpinnerControlSet extends TaskEditControlSet implements T
             String[] listTypes = getStringDefaultArray(json.optInt(fragment.getActivity().getString(R.string.tr_set_key_type), 0), R.array.tr_default_price_type_array);
             resetAdapter(listTypes);
         }
-        int intValue = json.optInt(key);
-        if (intValue < spinner.getCount())
-            spinner.setSelection(intValue);
+        int intValue = json.optInt(key, 0);
 
-        displayEdit.setText(spinner.getSelectedItem().toString());
+        Log.d("iii", "" + spinner.getCount());
+        if (intValue < spinner.getCount()) {
+            spinner.setSelection(intValue);
+            displayEdit.setText(spinner.getSelectedItem().toString());
+
+
+        }
+        Log.d("dfhjskhfds", ""+intValue);
     }
 
     @Override

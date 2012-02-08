@@ -4,26 +4,49 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:layout_weight="100"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    style="@style/Content_EditScroll" >
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="50dip" >
 
-        <TextView
-            android:id="@+id/task_rabbit_title"
+        <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="50dip"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:text="@string/TEA_more"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/task_rabbit_menu"
-            android:layout_width="50dip"
-            android:layout_height="50dip" />
-    </LinearLayout>
+            android:layout_height="wrap_content"
+            style="@style/Content"
+        android:background="?attr/abBackground">
+            >
+            
+        <RelativeLayout 
+            android:id="@+id/menu_nav"
+            android:layout_width="wrap_content"
+            android:layout_height="35dip"
+            android:layout_margin="5dip"
+            android:paddingRight="5dip"
+            android:paddingLeft="5dip"
+            android:gravity="center_vertical">
+            
+            <TextView
+            android:id="@+id/task_rabbit_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/BFE_Active"
+                android:singleLine="true"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                style="@style/TextAppearance.ActionBar_ListsHeader"/>
+            
+            <ImageView
+                android:id="@+id/menu_disclosure_arrow"
+                android:layout_width="12dip"
+                android:layout_height="12dip"
+                android:layout_marginLeft="10dip" 
+                android:layout_toRightOf="@id/task_rabbit_title"
+                android:layout_alignBottom="@id/task_rabbit_title"
+                android:src="?attr/asListsDisclosure"
+                android:scaleType="fitCenter"/>
+        
+        </RelativeLayout>
+        </LinearLayout>
 
     <ScrollView
         android:id="@+id/edit_scroll"
@@ -92,7 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="200dip"
                     android:layout_gravity="top"
-                    android:layout_marginTop="20dip"
+                    android:padding="10dip"
                     android:background="#00000000"
                     android:gravity="top"
                     android:hint="Description" />
@@ -111,13 +134,14 @@
                     android:scaleType="centerInside"
                     android:src="?attr/asCameraButtonImg" />
             </LinearLayout>
-
-            <Button
-                android:id="@+id/task_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Send Task!" />
         </LinearLayout>
     </ScrollView>
+    
+            <Button
+                android:id="@+id/task_button"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dip"
+                android:text="Send Task!" />
 
 </LinearLayout>
