@@ -205,11 +205,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
 
             int titleID = arrays.getResourceId(i, 0);
             int arrayID = arrayType.getResourceId(i, 0);
-            if (arrayID == R.string.tr_location) {
+            if (arrayID == R.string.tr_set_key_location) {
                 TaskRabbitLocationControlSet set = new TaskRabbitLocationControlSet(fragment, R.layout.task_rabbit_row, titleID, i);
                 controls.add(set);
             }
-            else if(arrayID == R.string.tr_deadline) {
+            else if(arrayID == R.string.tr_set_key_deadline) {
 
                 TaskRabbitDeadlineControlSet deadlineControl = new TaskRabbitDeadlineControlSet(
                         activity, R.layout.control_set_deadline,
@@ -217,7 +217,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 controls.add(deadlineControl);
                 deadlineControl.readFromTask(model);
             }
-            else if(arrayID == R.string.tr_name) {
+            else if(arrayID == R.string.tr_set_key_name || arrayID == R.string.tr_set_key_description) {
                 TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(activity,
                         R.layout.control_set_notes, R.layout.task_rabbit_row, titleID, i);
                 controls.add(nameControlSet);
@@ -235,9 +235,6 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
         populateFields(taskRabbitTask);
 
-        if (taskRabbitTask != null && TextUtils.isEmpty(taskRabbitTask.getTaskID())) {
-            taskButton.setText("Update task!");
-        }
         displayViewsForMode(getSelectedItemPosition());
     }
     private void displayViewsForMode(int mode) {
@@ -246,9 +243,9 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         taskControls.removeAllViews();
 
         if (row == null) {
-        row = new LinearLayout(activity);
-        row.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
-        row.setOrientation(LinearLayout.HORIZONTAL);
+            row = new LinearLayout(activity);
+            row.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+            row.setOrientation(LinearLayout.HORIZONTAL);
         }
         else {
             row.removeAllViews();
@@ -264,13 +261,22 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             int arrayID = keys.getResourceId(i, 0);
             if (arrayID == R.string.tr_set_key_cost_in_cents || arrayID == R.string.tr_set_key_named_price) {
                 if(row.getParent() == null)
-                   taskControls.addView(row);
-                View displayRow = ((TaskEditControlSet)set).getDisplayView();
+                    taskControls.addView(row);
+                LinearLayout displayRow = (LinearLayout)((TaskEditControlSet)set).getDisplayView();
                 displayRow.findViewById(R.id.TEA_Separator).setVisibility(View.GONE);
-                row.addView(displayRow, new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 1));
+                LinearLayout.LayoutParams layoutParams= null;
+                if(arrayID == R.string.tr_set_key_named_price) {
+                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 3);
+                    displayRow.findViewById(R.id.display_row_body).setPadding(5, 0, 10, 0);
+                    displayRow.setMinimumWidth(130);
+                }
+                else {
+                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 2);
+                    displayRow.findViewById(R.id.display_row_body).setPadding(10, 0, 5, 0);
+                }
+                row.addView(displayRow, layoutParams);
             }
             else {
-                taskControls.setOrientation(LinearLayout.VERTICAL);
                 taskControls.addView(((TaskEditControlSet)set).getDisplayView());
             }
             ((TaskRabbitSetListener) set).readFromModel(parameters, activity.getString(arrayID));
@@ -302,6 +308,15 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             taskButton.setOnClickListener(new OnClickListener() {
                 public void onClick(View v) {
                     submitTaskRabbit();
+                }
+            });
+
+            final ImageView mainMenu = (ImageView) getView().findViewById(R.id.main_menu);
+            mainMenu.setOnClickListener(new OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
                 }
             });
 
@@ -345,12 +360,11 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             createMenuPopover();
 
 
-            cameraButton = getDefaultCameraButton();
             final ClearImageCallback clearImage = new ClearImageCallback() {
                 @Override
                 public void clearImage() {
                     pendingCommentPicture = null;
-                    pictureButton.setImageResource(cameraButton);
+                    pictureButton.setImageResource(R.drawable.camera_button_gray);
                 }
             };
             pictureButton = (ImageButton) getView().findViewById(R.id.picture);
@@ -370,16 +384,14 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
 
 
-    private int getDefaultCameraButton() {
-        TypedValue tv = new TypedValue();
-        fragment.getActivity().getTheme().resolveAttribute(R.attr.asCameraButtonImg, tv, false);
-        return tv.data;
-    }
 
     private void populateFields(TaskRabbitTaskContainer container) {
         if (container == null) {
             return;
         }
+
+        if(taskRabbitTask.getTaskID() > 0)
+            taskButton.setText("Update task!");
         JSONObject jsonData = container.getLocalTaskData();
         synchronized (controls) {
             if(jsonData != null) {
@@ -493,8 +505,8 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 public void run() {
 
                     try {
-                        String taskID = taskRabbitTask.getTaskID();
-                        String urlCall = "tasks/" + taskID;
+                        String urlCall = "tasks/";
+                        if (taskRabbitTask.getTaskID() > 0) urlCall += (taskRabbitTask.getTaskID() > 0);
                         Log.d("Tasks url:", taskRabbitURL(urlCall));
                         Header authorization = new BasicHeader("Authorization", "OAuth " + Preferences.getStringValue(TASK_RABBIT_TOKEN));  //$NON-NLS-1$
                         Header contentType = new BasicHeader("Content-Type",  //$NON-NLS-1$
@@ -761,7 +773,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     @Override
     public boolean shouldShowTaskRabbit() {
         if(Locale.getDefault().getCountry().equals("US")) return true; //$NON-NLS-1$
-            return false;
+        return false;
     }
 
     public boolean supportsCurrentLocation() {

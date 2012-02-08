@@ -42,8 +42,17 @@ public class TaskRabbitTaskContainer extends SyncContainer {
         return getJSONData(TaskRabbitMetadata.DATA_REMOTE);
     }
 
-    public String getTaskID() {
-        return trTask.getValue(TaskRabbitMetadata.ID);
+    public int getTaskID() {
+
+        try {
+            int taskID = Integer.parseInt(trTask.getValue(TaskRabbitMetadata.ID));
+            if(taskID > 0)
+                return taskID;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
     private JSONObject getJSONData(StringProperty key) {
         if(trTask.containsNonNullValue(key)) {

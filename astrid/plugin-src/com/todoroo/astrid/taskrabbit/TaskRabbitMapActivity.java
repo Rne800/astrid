@@ -15,8 +15,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -75,7 +75,8 @@ public class TaskRabbitMapActivity extends MapActivity implements LocationListen
 
         searchText=(EditText)findViewById(R.id.search_text);
 
-        Button searchButton=(Button)findViewById(R.id.search_button);
+        ImageButton searchButton=(ImageButton)findViewById(R.id.search_button);
+        searchButton.setImageResource(android.R.drawable.ic_menu_search);
         searchButton.setOnClickListener(new View.OnClickListener() {
 
             @Override

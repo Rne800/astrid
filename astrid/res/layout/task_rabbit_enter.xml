@@ -13,7 +13,20 @@
             android:layout_height="?attr/abHeight"
             style="@style/Content"
         android:background="?attr/abBackground">
-            
+    <ImageView
+        android:id="@+id/main_menu"
+        android:layout_width="51dip"
+        android:layout_height="fill_parent"
+        android:src="?attr/asMainMenu"
+        android:scaleType="fitCenter"/>
+    
+    <View
+        android:layout_width="1px"
+        android:layout_height="fill_parent"
+        android:background="?attr/asSeparatorBackground"
+        android:layout_marginBottom="4dip"
+        android:layout_marginTop="4dip"/>
+    
         <RelativeLayout 
             android:id="@+id/menu_nav"
             android:layout_width="wrap_content"
@@ -131,7 +144,7 @@
                     android:paddingLeft="7dip"
                     android:paddingRight="7dip"
                     android:scaleType="centerInside"
-                    android:src="?attr/asCameraButtonImg" />
+            android:src="@drawable/camera_button_gray" />
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -141,6 +154,6 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
-                android:text="Send Task!" />
+                android:text="Post Task!" />
 
 </LinearLayout>

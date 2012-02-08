@@ -41,7 +41,6 @@
     </array>
     
     <array name="tr_default_type_virtual">
-        <item>0</item>
         <item>-1</item>
         <item>-1</item>
         <item>4</item>
@@ -51,10 +50,10 @@
         <item>-1</item>
         <item>0</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_food_delivery">
-        <item>1</item>
-        <item>1</item>
+        <item>0</item>
         <item>-1</item>
         <item>-1</item>
         <item>-1</item>
@@ -63,9 +62,9 @@
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_cleaning">
-        <item>2</item>
         <item>-1</item>
         <item>0</item>
         <item>-1</item>
@@ -75,9 +74,9 @@
         <item>-1</item>
         <item>0</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_donations">
-        <item>3</item>
         <item>-1</item>
         <item>0</item>
         <item>-1</item>
@@ -87,9 +86,9 @@
         <item>0</item>
         <item>0</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_delivery">
-        <item>4</item>
         <item>-1</item>
         <item>0</item>
         <item>-1</item>
@@ -99,9 +98,9 @@
         <item>0</item>
         <item>0</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_handyman">
-        <item>5</item>
         <item>-1</item>
         <item>0</item>
         <item>2</item>
@@ -111,9 +110,9 @@
         <item>-1</item>
         <item>1</item>
         <item>2</item>
+        <item>0</item>
     </array>
     <array name="tr_default_type_shopping">
-        <item>6</item>
         <item>-1</item>
         <item>0</item>
         <item>-1</item>
@@ -123,10 +122,10 @@
         <item>0</item>
         <item>2</item>
         <item>2</item>
+        <item>0</item>
     </array>
     
     <array name="tr_default_type_something_else">
-        <item>7</item>
         <item>-1</item>
         <item>0</item>
         <item>-1</item>
@@ -136,6 +135,7 @@
         <item>0</item>
         <item>2</item>
         <item>2</item>
+        <item>0</item>
     </array>
     
     
@@ -160,7 +160,6 @@
 
     
     <string-array name="tr_default_set">
-        <item>@string/tr_set_type</item>
         <item>@string/tr_set_name</item>
         <item>@string/tr_set_location</item>
         <item>@string/tr_set_skill_required</item>
@@ -170,6 +169,7 @@
         <item>@string/tr_set_drop_off</item>
         <item>@string/tr_set_cost_in_cents</item>
         <item>@string/tr_set_named_price</item>
+        <item>@string/tr_set_description</item>
     </string-array>
     
     <!-- Control set title (do not translate) -->
@@ -183,10 +183,10 @@
     <string name="tr_set_drop_off">Dropoff</string>
     <string name="tr_set_cost_in_cents">Expenses</string>
     <string name="tr_set_named_price">I\'ll Pay</string>
+    <string name="tr_set_description">Description</string>
     
         
     <string-array name="tr_default_set_key">
-        <item>@string/tr_set_key_type</item>
         <item>@string/tr_set_key_name</item>
         <item>@string/tr_set_key_location</item>
         <item>@string/tr_set_key_skill_required</item>
@@ -196,6 +196,7 @@
         <item>@string/tr_set_key_drop_off</item>
         <item>@string/tr_set_key_cost_in_cents</item>
         <item>@string/tr_set_key_named_price</item>
+        <item>@string/tr_set_key_description</item>
     </string-array>
     
     <!-- Control set key for json (do not translate) -->
@@ -213,16 +214,16 @@
     
     
     <array name="tr_default_array">
-        <item>@array/tr_empty_string_array</item>
-        <item>@string/tr_name</item>
-        <item>@string/tr_location</item>
+        <item>@string/tr_set_key_name</item>
+        <item>@string/tr_set_key_location</item>
         <item>@array/tr_default_skill</item>
         <item>@array/tr_default_duration</item>
         <item>@array/tr_default_supplies</item>
-        <item>@string/tr_deadline</item>
-        <item>@string/tr_location</item>
+        <item>@string/tr_set_key_deadline</item>
+        <item>@string/tr_set_key_location</item>
         <item>@array/tr_default_cost_in_cents</item>
         <item>@array/tr_default_named_price</item>
+        <item>@string/tr_set_key_description</item>
     </array>
     
     
@@ -297,10 +298,6 @@
     <string name="tr_default_duration_10">I do not know</string>
     
   
-    <string-array name="tr_empty_string_array"></string-array>
-    <string name="tr_location">tr_location</string>
-    <string name="tr_deadline">tr_deadline</string>
-    <string name="tr_name">tr_name</string>
     
     
     

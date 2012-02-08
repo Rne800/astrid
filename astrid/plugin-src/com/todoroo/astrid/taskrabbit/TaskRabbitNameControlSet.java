@@ -31,7 +31,7 @@ public class TaskRabbitNameControlSet extends PopupControlSet implements TaskRab
         notesBody = (LinearLayout) getDisplayView().findViewById(R.id.notes_body);
         dialog.getWindow()
               .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        displayText.setText("Restaurant");
+        displayText.setText(activity.getString(titleID));;
     }
 
     @Override
