@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -26,6 +27,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -33,6 +35,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -46,6 +49,7 @@ import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow.OnDismissListener;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -107,6 +111,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     private TextView menuTitle;
     private ListView menuList;
     private ListAdapter adapter;
+    private ScrollView scrollView;
 
 
     private View menuNav;
@@ -217,7 +222,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
                 controls.add(deadlineControl);
                 deadlineControl.readFromTask(model);
             }
-            else if(arrayID == R.string.tr_set_key_name || arrayID == R.string.tr_set_key_description) {
+            else if(arrayID == R.string.tr_set_key_name) {
                 TaskRabbitNameControlSet nameControlSet = new TaskRabbitNameControlSet(activity,
                         R.layout.control_set_notes, R.layout.task_rabbit_row, titleID, i);
                 controls.add(nameControlSet);
@@ -229,6 +234,7 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
         }
         if(TextUtils.isEmpty(taskDescription.getText())){
             taskDescription.setText(model.getValue(Task.NOTES));
+
         }
         if(TextUtils.isEmpty(taskTitle.getText())) {
             taskTitle.setText(model.getValue(Task.TITLE));
@@ -262,16 +268,21 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
             if (arrayID == R.string.tr_set_key_cost_in_cents || arrayID == R.string.tr_set_key_named_price) {
                 if(row.getParent() == null)
                     taskControls.addView(row);
+                else {
+//                    View separator = activity.getLayoutInflater().inflate(R.layout.tea_separator, row);
+//                    separator.setLayoutParams(new LayoutParams(1, LayoutParams.FILL_PARENT));
+
+                }
                 LinearLayout displayRow = (LinearLayout)((TaskEditControlSet)set).getDisplayView();
                 displayRow.findViewById(R.id.TEA_Separator).setVisibility(View.GONE);
                 LinearLayout.LayoutParams layoutParams= null;
                 if(arrayID == R.string.tr_set_key_named_price) {
-                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 3);
+                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 1);
                     displayRow.findViewById(R.id.display_row_body).setPadding(5, 0, 10, 0);
                     displayRow.setMinimumWidth(130);
                 }
                 else {
-                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 2);
+                    layoutParams = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.FILL_PARENT, 1);
                     displayRow.findViewById(R.id.display_row_body).setPadding(10, 0, 5, 0);
                 }
                 row.addView(displayRow, layoutParams);
@@ -299,7 +310,21 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     /** Initialize UI components */
     private void setUpUIComponents() {
         if (taskDescription == null){
+            scrollView = (ScrollView) getView().findViewById(R.id.edit_scroll);
             taskDescription = (EditText) getView().findViewById(R.id.task_description);
+            taskDescription.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+//                        scrollView.fullScroll(ScrollView.FOCUS_DOWN);
+                    }
+                }
+            });
+
+
+
+
             taskTitle = (EditText) getView().findViewById(R.id.task_title);
 
             taskControls = (LinearLayout)getView().findViewById(R.id.task_controls);
@@ -602,10 +627,36 @@ public class TaskRabbitControlSet extends PopupControlSet implements AssignedCha
     }
     private void loadLocation() {
         LocationManager locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+
+        if ( !locationManager.isProviderEnabled( LocationManager.GPS_PROVIDER ) || !locationManager.isProviderEnabled( LocationManager.NETWORK_PROVIDER )) {
+            buildAlertMessageNoGps();
+        }
+
         currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000L, 500.0f, this);
         updateControlSetLocation(currentLocation);
     }
+
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setMessage("Yout GPS seems to be disabled, do you want to enable it?")
+        .setCancelable(false)
+        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                activity.startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+            }
+        })
+        .setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                dialog.cancel();
+            }
+        });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+
 
     protected void saveUserInfo(String response) throws Exception {
         JSONObject userObject = new JSONObject(response);

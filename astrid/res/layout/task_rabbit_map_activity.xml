@@ -22,8 +22,8 @@
             android:id="@+id/search_text"
             android:layout_width="wrap_content"
             android:layout_height="fill_parent"
-        android:layout_weight="10"
-            android:hint="Search by address" />
+            android:layout_weight="10"
+            android:hint="Enter address"/>
 
         <ImageButton
             android:id="@+id/search_button"

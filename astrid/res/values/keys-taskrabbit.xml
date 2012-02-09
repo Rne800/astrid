@@ -169,7 +169,6 @@
         <item>@string/tr_set_drop_off</item>
         <item>@string/tr_set_cost_in_cents</item>
         <item>@string/tr_set_named_price</item>
-        <item>@string/tr_set_description</item>
     </string-array>
     
     <!-- Control set title (do not translate) -->
@@ -196,7 +195,6 @@
         <item>@string/tr_set_key_drop_off</item>
         <item>@string/tr_set_key_cost_in_cents</item>
         <item>@string/tr_set_key_named_price</item>
-        <item>@string/tr_set_key_description</item>
     </string-array>
     
     <!-- Control set key for json (do not translate) -->
@@ -223,7 +221,6 @@
         <item>@string/tr_set_key_location</item>
         <item>@array/tr_default_cost_in_cents</item>
         <item>@array/tr_default_named_price</item>
-        <item>@string/tr_set_key_description</item>
     </array>
     
     
